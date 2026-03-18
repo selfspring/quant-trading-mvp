@@ -1,28 +1,27 @@
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
+sys.path.insert(0, 'E:/quant-trading-mvp')
 import pandas as pd
-import psycopg2
+from quant.common.config import config
+from quant.common.db import db_engine
 
-conn = psycopg2.connect(host='localhost', port=5432, dbname='quant_trading', user='postgres', password='@Cmx1454697261')
+with db_engine(config) as engine:
+    # au_main 30m data for technical analysis
+    df = pd.read_sql("""
+        SELECT time as timestamp, open, high, low, close, volume, 
+               COALESCE(open_interest, 0) as open_interest 
+        FROM kline_data 
+        WHERE symbol='au_main' AND interval='30m' 
+        ORDER BY time DESC LIMIT 100
+    """, engine)
 
-# au_main 30m data for technical analysis
-df = pd.read_sql("""
-    SELECT time as timestamp, open, high, low, close, volume, 
-           COALESCE(open_interest, 0) as open_interest 
-    FROM kline_data 
-    WHERE symbol='au_main' AND interval='30m' 
-    ORDER BY time DESC LIMIT 100
-""", conn)
-
-# au2606 latest 1m price
-df_live = pd.read_sql("""
-    SELECT time as timestamp, close 
-    FROM kline_data 
-    WHERE symbol='au2606' AND interval='1m' 
-    ORDER BY time DESC LIMIT 5
-""", conn)
-
-conn.close()
+    # au2606 latest 1m price
+    df_live = pd.read_sql("""
+        SELECT time as timestamp, close 
+        FROM kline_data 
+        WHERE symbol='au2606' AND interval='1m' 
+        ORDER BY time DESC LIMIT 5
+    """, engine)
 
 print(f"au_main 30m rows: {len(df)}")
 df = df.sort_values('timestamp').reset_index(drop=True)

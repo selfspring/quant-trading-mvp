@@ -14,7 +14,8 @@ os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from quant.data_collector.fundamental_collector import FundamentalCollector
-import psycopg2
+from quant.common.config import config
+from quant.common.db import db_connection
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -84,100 +85,92 @@ def collect_and_save():
 
 def save_to_macro_data(df_dollar, df_treasury, df_fed, df_nonfarm, df_cpi):
     """将数据保存到 macro_data 表"""
-    conn = psycopg2.connect(
-        host='localhost',
-        port=5432,
-        database='quant_trading',
-        user='postgres',
-        password='@Cmx1454697261'
-    )
-    
-    try:
-        cur = conn.cursor()
-        
-        # 合并所有数据源（按日期）
-        import pandas as pd
-        
-        # 准备数据字典
-        data_dict = {}
-        
-        # 美元指数
-        if not df_dollar.empty:
-            for _, row in df_dollar.iterrows():
-                date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
-                if date not in data_dict:
-                    data_dict[date] = {}
-                data_dict[date]['dollar_index'] = row['dollar_index']
-        
-        # 美债收益率
-        if not df_treasury.empty:
-            for _, row in df_treasury.iterrows():
-                date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
-                if date not in data_dict:
-                    data_dict[date] = {}
-                data_dict[date]['treasury_yield'] = row['treasury_yield_10y']
-        
-        # 美联储利率
-        if not df_fed.empty:
-            for _, row in df_fed.iterrows():
-                date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
-                if date not in data_dict:
-                    data_dict[date] = {}
-                data_dict[date]['fed_rate'] = row['fed_rate']
-        
-        # 非农就业
-        if not df_nonfarm.empty:
-            for _, row in df_nonfarm.iterrows():
-                date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
-                if date not in data_dict:
-                    data_dict[date] = {}
-                data_dict[date]['non_farm'] = row['non_farm']
-        
-        # CPI
-        if not df_cpi.empty:
-            for _, row in df_cpi.iterrows():
-                date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
-                if date not in data_dict:
-                    data_dict[date] = {}
-                data_dict[date]['cpi'] = row['cpi']
-        
-        # 插入数据库
-        count = 0
-        for date, values in data_dict.items():
-            # 构建动态 SQL
-            indicators = []
-            if 'dollar_index' in values:
-                indicators.append(('DOLLAR_INDEX', values['dollar_index'], 'index', 'yfinance'))
-            if 'treasury_yield' in values:
-                indicators.append(('US10Y_YIELD', values['treasury_yield'], 'percent', 'US Treasury'))
-            if 'fed_rate' in values:
-                indicators.append(('FED_FUNDS_RATE', values['fed_rate'], 'percent', 'Federal Reserve'))
-            if 'non_farm' in values:
-                indicators.append(('NON_FARM_PAYROLL', values['non_farm'], 'thousands', 'BLS'))
-            if 'cpi' in values:
-                indicators.append(('CPI_USA', values['cpi'], 'index', 'BLS'))
+    with db_connection(config) as conn:
+        try:
+            cur = conn.cursor()
             
-            for indicator, value, unit, source in indicators:
-                cur.execute("""
-                    INSERT INTO macro_data (time, indicator, value, unit, source)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ON CONFLICT (time, indicator) DO UPDATE SET
-                        value = EXCLUDED.value,
-                        unit = EXCLUDED.unit,
-                        source = EXCLUDED.source
-                """, (date, indicator, value, unit, source))
-                count += 1
-        
-        conn.commit()
-        logger.info(f"成功写入/更新 {count} 条宏观数据记录")
-        
-    except Exception as e:
-        conn.rollback()
-        logger.error(f"保存数据失败: {e}", exc_info=True)
-        raise
-    finally:
-        cur.close()
-        conn.close()
+            # 合并所有数据源（按日期）
+            import pandas as pd
+            
+            # 准备数据字典
+            data_dict = {}
+            
+            # 美元指数
+            if not df_dollar.empty:
+                for _, row in df_dollar.iterrows():
+                    date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
+                    if date not in data_dict:
+                        data_dict[date] = {}
+                    data_dict[date]['dollar_index'] = row['dollar_index']
+            
+            # 美债收益率
+            if not df_treasury.empty:
+                for _, row in df_treasury.iterrows():
+                    date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
+                    if date not in data_dict:
+                        data_dict[date] = {}
+                    data_dict[date]['treasury_yield'] = row['treasury_yield_10y']
+            
+            # 美联储利率
+            if not df_fed.empty:
+                for _, row in df_fed.iterrows():
+                    date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
+                    if date not in data_dict:
+                        data_dict[date] = {}
+                    data_dict[date]['fed_rate'] = row['fed_rate']
+            
+            # 非农就业
+            if not df_nonfarm.empty:
+                for _, row in df_nonfarm.iterrows():
+                    date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
+                    if date not in data_dict:
+                        data_dict[date] = {}
+                    data_dict[date]['non_farm'] = row['non_farm']
+            
+            # CPI
+            if not df_cpi.empty:
+                for _, row in df_cpi.iterrows():
+                    date = row['date'].date() if hasattr(row['date'], 'date') else row['date']
+                    if date not in data_dict:
+                        data_dict[date] = {}
+                    data_dict[date]['cpi'] = row['cpi']
+            
+            # 插入数据库
+            count = 0
+            for date, values in data_dict.items():
+                # 构建动态 SQL
+                indicators = []
+                if 'dollar_index' in values:
+                    indicators.append(('DOLLAR_INDEX', values['dollar_index'], 'index', 'yfinance'))
+                if 'treasury_yield' in values:
+                    indicators.append(('US10Y_YIELD', values['treasury_yield'], 'percent', 'US Treasury'))
+                if 'fed_rate' in values:
+                    indicators.append(('FED_FUNDS_RATE', values['fed_rate'], 'percent', 'Federal Reserve'))
+                if 'non_farm' in values:
+                    indicators.append(('NON_FARM_PAYROLL', values['non_farm'], 'thousands', 'BLS'))
+                if 'cpi' in values:
+                    indicators.append(('CPI_USA', values['cpi'], 'index', 'BLS'))
+                
+                for indicator, value, unit, source in indicators:
+                    cur.execute("""
+                        INSERT INTO macro_data (time, indicator, value, unit, source)
+                        VALUES (%s, %s, %s, %s, %s)
+                        ON CONFLICT (time, indicator) DO UPDATE SET
+                            value = EXCLUDED.value,
+                            unit = EXCLUDED.unit,
+                            source = EXCLUDED.source
+                    """, (date, indicator, value, unit, source))
+                    count += 1
+            
+            conn.commit()
+            logger.info(f"成功写入/更新 {count} 条宏观数据记录")
+            
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"保存数据失败: {e}", exc_info=True)
+            raise
+        finally:
+            cur.close()
 
 
 def main():

@@ -5,26 +5,19 @@
 import sys
 import os
 import pandas as pd
-import psycopg2
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
 from quant.signal_generator.feature_engineer import FeatureEngineer
 from quant.signal_generator.model_trainer import ModelTrainer
+from quant.common.config import config
+from quant.common.db import db_engine
 
 
 def load_real_data() -> pd.DataFrame:
     """从数据库加载真实日K线数据"""
     print("[DATA] 从数据库加载真实日K线数据...")
-    
-    conn = psycopg2.connect(
-        host='localhost',
-        port=5432,
-        database='quant_trading',
-        user='postgres',
-        password='@Cmx1454697261'
-    )
     
     query = """
         SELECT time as timestamp, open, high, low, close, volume
@@ -33,8 +26,8 @@ def load_real_data() -> pd.DataFrame:
         ORDER BY time ASC
     """
     
-    df = pd.read_sql(query, conn)
-    conn.close()
+    with db_engine(config) as engine:
+        df = pd.read_sql(query, engine)
     
     # 转换时间戳
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -129,7 +122,7 @@ def main():
 if __name__ == "__main__":
     try:
         metrics = main()
-        print("\n[SUCCESS] 模型训练完成！")
+        print("\n[SUCCESS] 模型训���完成！")
     except Exception as e:
         print(f"\n[ERROR] 错误: {e}")
         import traceback

@@ -74,7 +74,6 @@ def get_kline_data():
     
     # 1. 优先从数据库读取
     try:
-        import psycopg2
         with db_engine(config) as conn:
             # 优先读 30 分钟线（与模型训练一致）
             df = pd.read_sql("""

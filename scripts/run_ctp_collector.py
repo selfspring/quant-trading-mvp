@@ -5,7 +5,10 @@ import time
 import logging
 from datetime import datetime, timedelta
 from openctp_ctp import mdapi
-import psycopg2
+
+sys.path.insert(0, 'E:/quant-trading-mvp')
+from quant.common.config import config
+from quant.common.db import db_connection
 
 # 配置
 BROKER_ID = "9999"
@@ -80,15 +83,26 @@ def is_trading_time():
     return False
 
 
-def get_db_conn():
-    """获取数据库连接"""
-    return psycopg2.connect(
-        host='localhost',
-        port=5432,
-        dbname='quant_trading',
-        user='postgres',
-        password='@Cmx1454697261'
-    )
+def save_bar(bar):
+    """保存K线到数据库"""
+    try:
+        with db_connection(config) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO kline_data (time, symbol, interval, open, high, low, close, volume, open_interest)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (time, symbol, interval) DO UPDATE SET
+                    open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
+                    close=EXCLUDED.close, volume=EXCLUDED.volume, open_interest=EXCLUDED.open_interest
+            """, (bar['time'], bar['symbol'], '1m', bar['open'], bar['high'], 
+                  bar['low'], bar['close'], bar['volume'], bar['open_interest']))
+            conn.commit()
+            cur.close()
+        logger.info(f"K线保存: {bar['time']} O:{bar['open']:.2f} H:{bar['high']:.2f} L:{bar['low']:.2f} C:{bar['close']:.2f}")
+        # 每根1m线保存后，更新当前30m窗口的聚合
+        aggregate_30m(bar['symbol'], bar['time'])
+    except Exception as e:
+        logger.error(f"保存失败: {e}")
 
 
 def aggregate_30m(symbol, bar_time):
@@ -97,29 +111,28 @@ def aggregate_30m(symbol, bar_time):
         from datetime import timedelta
         bar_30m_start = bar_time.replace(minute=(bar_time.minute // 30) * 30, second=0, microsecond=0)
         bar_30m_end = bar_30m_start + timedelta(minutes=30)
-        conn = get_db_conn()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT 
-                (SELECT open FROM kline_data WHERE symbol=%s AND interval='1m' AND time >= %s AND time < %s ORDER BY time ASC LIMIT 1),
-                MAX(high), MIN(low),
-                (SELECT close FROM kline_data WHERE symbol=%s AND interval='1m' AND time >= %s AND time < %s ORDER BY time DESC LIMIT 1),
-                MAX(volume), MAX(open_interest)
-            FROM kline_data WHERE symbol=%s AND interval='1m' AND time >= %s AND time < %s
-        """, (symbol, bar_30m_start, bar_30m_end, symbol, bar_30m_start, bar_30m_end, symbol, bar_30m_start, bar_30m_end))
-        row = cur.fetchone()
-        if row and row[0] is not None:
+        with db_connection(config) as conn:
+            cur = conn.cursor()
             cur.execute("""
-                INSERT INTO kline_data (time, symbol, interval, open, high, low, close, volume, open_interest)
-                VALUES (%s, %s, '30m', %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (time, symbol, interval) DO UPDATE SET
-                    open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
-                    close=EXCLUDED.close, volume=EXCLUDED.volume, open_interest=EXCLUDED.open_interest
-            """, (bar_30m_start, symbol, row[0], row[1], row[2], row[3], row[4], row[5]))
-            conn.commit()
-            logger.info(f"30m聚合: {bar_30m_start} O:{row[0]:.2f} H:{row[1]:.2f} L:{row[2]:.2f} C:{row[3]:.2f}")
-        cur.close()
-        conn.close()
+                SELECT 
+                    (SELECT open FROM kline_data WHERE symbol=%s AND interval='1m' AND time >= %s AND time < %s ORDER BY time ASC LIMIT 1),
+                    MAX(high), MIN(low),
+                    (SELECT close FROM kline_data WHERE symbol=%s AND interval='1m' AND time >= %s AND time < %s ORDER BY time DESC LIMIT 1),
+                    MAX(volume), MAX(open_interest)
+                FROM kline_data WHERE symbol=%s AND interval='1m' AND time >= %s AND time < %s
+            """, (symbol, bar_30m_start, bar_30m_end, symbol, bar_30m_start, bar_30m_end, symbol, bar_30m_start, bar_30m_end))
+            row = cur.fetchone()
+            if row and row[0] is not None:
+                cur.execute("""
+                    INSERT INTO kline_data (time, symbol, interval, open, high, low, close, volume, open_interest)
+                    VALUES (%s, %s, '30m', %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (time, symbol, interval) DO UPDATE SET
+                        open=EXCLUDED.open, high=EXCLUDED.high, low=EXCLUDED.low,
+                        close=EXCLUDED.close, volume=EXCLUDED.volume, open_interest=EXCLUDED.open_interest
+                """, (bar_30m_start, symbol, row[0], row[1], row[2], row[3], row[4], row[5]))
+                conn.commit()
+                logger.info(f"30m���合: {bar_30m_start} O:{row[0]:.2f} H:{row[1]:.2f} L:{row[2]:.2f} C:{row[3]:.2f}")
+            cur.close()
     except Exception as e:
         logger.error(f"30m聚合失败: {e}")
 

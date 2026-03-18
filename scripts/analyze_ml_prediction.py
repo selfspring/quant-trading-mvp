@@ -5,12 +5,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 import numpy as np
 from quant.signal_generator.ml_predictor import MLPredictor
+from quant.common.config import config
+from quant.common.db import db_engine
 
 # 1. 从数据库读取最新 K 线
-import psycopg2
-conn = psycopg2.connect(host='localhost', port=5432, dbname='quant_trading', user='postgres', password='@Cmx1454697261')
-df = pd.read_sql("SELECT time as timestamp, open, high, low, close, volume FROM kline_data WHERE symbol='au2606' AND interval='1m' ORDER BY time DESC LIMIT 100", conn)
-conn.close()
+with db_engine(config) as engine:
+    df = pd.read_sql("SELECT time as timestamp, open, high, low, close, volume FROM kline_data WHERE symbol='au2606' AND interval='1m' ORDER BY time DESC LIMIT 100", engine)
 
 if len(df) < 60:
     print("数据库 K 线不足，使用 AkShare")

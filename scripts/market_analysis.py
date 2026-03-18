@@ -1,14 +1,14 @@
 import pandas as pd
-import psycopg2
 import sys
 sys.path.insert(0, 'E:/quant-trading-mvp')
 
 from quant.signal_generator.ml_predictor import MLPredictor
+from quant.common.config import config
+from quant.common.db import db_engine
 
-conn = psycopg2.connect(host='localhost', port=5432, dbname='quant_trading', user='postgres', password='@Cmx1454697261')
-# 使用 1m 数据，获取至少 200 条
-df = pd.read_sql("SELECT time as timestamp, open, high, low, close, volume, COALESCE(open_interest, 0) as open_interest FROM kline_data WHERE symbol='au2606' AND interval='1m' ORDER BY time DESC LIMIT 200", conn)
-conn.close()
+with db_engine(config) as engine:
+    # 使用 1m 数据，获取至少 200 条
+    df = pd.read_sql("SELECT time as timestamp, open, high, low, close, volume, COALESCE(open_interest, 0) as open_interest FROM kline_data WHERE symbol='au2606' AND interval='1m' ORDER BY time DESC LIMIT 200", engine)
 df = df.sort_values('timestamp').reset_index(drop=True)
 
 print(f'Data rows: {len(df)}')

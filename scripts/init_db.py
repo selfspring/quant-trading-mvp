@@ -2,8 +2,6 @@
 数据库初始化脚本
 创建所有必需的表（14 张表）
 """
-import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import sys
 import os
 
@@ -21,18 +19,18 @@ from quant.common.config import config
 
 def create_database():
     """创建数据库（如果不存在）"""
+    from quant.common.db import db_connection as _unused_trigger  # noqa: F401
+    # 需要连接 postgres 库（目标库可能还不存在），不能用 db_connection
+    from quant.common.db import get_db_dsn
+    import importlib
+    _psycopg2 = importlib.import_module('psycopg2')
+    _autocommit = importlib.import_module('psycopg2.extensions').ISOLATION_LEVEL_AUTOCOMMIT
     conn = None
     cursor = None
     try:
-        # 连接到默认 postgres 数据库
-        conn = psycopg2.connect(
-            host=config.database.host,
-            port=config.database.port,
-            user=config.database.user,
-            password=config.database.password.get_secret_value(),
-            database='postgres'
-        )
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        dsn = f"host={config.database.host} port={config.database.port} dbname=postgres user={config.database.user} password={config.database.password.get_secret_value()}"
+        conn = getattr(_psycopg2, 'connect')(dsn)
+        conn.set_isolation_level(_autocommit)
         cursor = conn.cursor()
         
         # 检查数据库是否存在
@@ -62,44 +60,25 @@ def create_database():
 
 def enable_timescaledb():
     """启用 TimescaleDB 扩展"""
-    conn = None
-    cursor = None
+    from quant.common.db import db_connection
     try:
-        conn = psycopg2.connect(
-            host=config.database.host,
-            port=config.database.port,
-            user=config.database.user,
-            password=config.database.password.get_secret_value(),
-            database=config.database.database
-        )
-        cursor = conn.cursor()
-        
-        cursor.execute("CREATE EXTENSION IF NOT EXISTS timescaledb")
-        conn.commit()
+        with db_connection(config) as conn:
+            cursor = conn.cursor()
+            cursor.execute("CREATE EXTENSION IF NOT EXISTS timescaledb")
+            conn.commit()
+            cursor.close()
         print("✅ TimescaleDB 扩展已启用")
     
     except Exception as e:
         print(f"⚠️ TimescaleDB 扩展启用失败（可能已安装）: {e}")
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 
 def create_tables():
     """创建所有表（带事务回滚机制）"""
-    conn = None
-    cursor = None
+    from quant.common.db import db_connection
     try:
-        conn = psycopg2.connect(
-            host=config.database.host,
-            port=config.database.port,
-            user=config.database.user,
-            password=config.database.password.get_secret_value(),
-            database=config.database.database
-        )
-        cursor = conn.cursor()
+        with db_connection(config) as conn:
+            cursor = conn.cursor()
         
         # 表 1：K 线数据
         cursor.execute("""
@@ -460,15 +439,8 @@ def create_tables():
         print("\n🎉 所有表创建完成！共 14 张表")
     
     except Exception as e:
-        if conn:
-            conn.rollback()
         print(f"\n❌ 创建表失败，已回滚：{e}")
         raise
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 
 if __name__ == '__main__':

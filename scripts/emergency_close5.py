@@ -5,17 +5,16 @@ import sys, os, time, threading
 sys.path.insert(0, 'E:\\quant-trading-mvp')
 
 from quant.common.config import config
+from quant.common.db import db_connection
 from openctp_ctp import tdapi
-import psycopg2
 
 def get_current_price():
     """从数据库获取最新价格"""
-    conn = psycopg2.connect(host='localhost', dbname='quant_trading', user='postgres', password='@Cmx1454697261')
-    cur = conn.cursor()
-    cur.execute("SELECT close FROM kline_data WHERE symbol='au2606' AND interval='1m' ORDER BY time DESC LIMIT 1")
-    row = cur.fetchone()
-    conn.close()
-    return float(row[0]) if row else None
+    with db_connection(config) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT close FROM kline_data WHERE symbol='au2606' AND interval='1m' ORDER BY time DESC LIMIT 1")
+        row = cur.fetchone()
+        return float(row[0]) if row else None
 
 class CloseSpi(tdapi.CThostFtdcTraderSpi):
     def __init__(self, api):

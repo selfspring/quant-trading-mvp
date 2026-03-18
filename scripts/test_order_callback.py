@@ -62,12 +62,11 @@ def order_callback(event_type, data):
         ev_done.set()
 
 # 获取当前价格
-import psycopg2
-conn = psycopg2.connect(host='localhost', dbname='quant_trading', user='postgres', password='@Cmx1454697261')
-cur = conn.cursor()
-cur.execute("SELECT close FROM kline_data WHERE symbol='au2606' AND interval='1m' ORDER BY time DESC LIMIT 1")
-row = cur.fetchone()
-conn.close()
+from quant.common.db import db_connection
+with db_connection(config) as conn:
+    cur = conn.cursor()
+    cur.execute("SELECT close FROM kline_data WHERE symbol='au2606' AND interval='1m' ORDER BY time DESC LIMIT 1")
+    row = cur.fetchone()
 current_price = float(row[0]) if row else 1116.0
 limit_price = round(current_price + 2.0, 2)  # 限价高于当前价 2 元，容易成交
 logger.info(f"当前价格: {current_price}, 报单限价: {limit_price}")

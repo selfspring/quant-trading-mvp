@@ -32,7 +32,7 @@ from quant.risk_executor.risk_manager import RiskManager
 from quant.risk_executor.trade_executor import TradeExecutor
 from quant.data_collector.ctp_trade import CTPTradeApi
 import pandas as pd
-import psycopg2
+from quant.common.db import db_connection, db_engine
 
 STATE_FILE = Path(r"E:\quant-trading-mvp\data\strategy_state.json")
 
@@ -49,14 +49,13 @@ try:
     
     # 2. 获取 K 线
     logger.info("步骤 2: 获取 K 线数据")
-    conn = psycopg2.connect(host='localhost', port=5432, dbname='quant_trading', user='postgres', password='@Cmx1454697261')
-    df = pd.read_sql("""
-        SELECT time as timestamp, open, high, low, close, volume, COALESCE(open_interest, 0) as open_interest
-        FROM kline_data
-        WHERE symbol = %s AND interval = '1m'
-        ORDER BY time DESC LIMIT 300
-    """, conn, params=(config.strategy.symbol,))
-    conn.close()
+    with db_engine(config) as engine:
+        df = pd.read_sql("""
+            SELECT time as timestamp, open, high, low, close, volume, COALESCE(open_interest, 0) as open_interest
+            FROM kline_data
+            WHERE symbol = %s AND interval = '1m'
+            ORDER BY time DESC LIMIT 300
+        """, engine, params=(config.strategy.symbol,))
     
     if len(df) >= 60:
         df = df.sort_values('timestamp').reset_index(drop=True)
