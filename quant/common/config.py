@@ -4,7 +4,7 @@
 """
 from pydantic_settings import BaseSettings
 from pydantic import Field, field_validator, SecretStr
-from typing import Literal, Optional
+from typing import Any, Callable, Literal, Optional
 import os
 
 
@@ -75,7 +75,7 @@ class CTPConfig(BaseSettings):
         return cls(
             broker_id="9999",
             account_id=account_id,
-            password=password,
+            password=SecretStr(password),
             md_address="tcp://182.254.243.31:30011",
             td_address="tcp://182.254.243.31:30001",
             app_id="simnow_client_test",
@@ -100,7 +100,7 @@ class CTPConfig(BaseSettings):
         return cls(
             broker_id="9999",
             account_id=account_id,
-            password=password,
+            password=SecretStr(password),
             md_address=f"tcp://182.254.243.31:{md_port}",
             td_address=f"tcp://182.254.243.31:{td_port}",
             app_id="simnow_client_test",
@@ -113,7 +113,7 @@ class CTPConfig(BaseSettings):
         return cls(
             broker_id="9999",
             account_id=account_id,
-            password=password,
+            password=SecretStr(password),
             md_address="tcp://trading.openctp.cn:30011",
             td_address="tcp://trading.openctp.cn:30001",
             app_id="simnow_client_test",
@@ -122,7 +122,7 @@ class CTPConfig(BaseSettings):
     
     @field_validator('account_id', 'password')
     @classmethod
-    def validate_credentials(cls, v):
+    def validate_credentials(cls, v: Any) -> Any:
         """验证账户信息不能为空"""
         if isinstance(v, SecretStr):
             if not v.get_secret_value():
@@ -202,17 +202,17 @@ class MLConfig(BaseSettings):
         env_prefix = "ML_"
 
 
-class Config(BaseSettings):
+class AppConfig(BaseSettings):
     """主配置类"""
     # 环境
     env: Literal["dev", "test", "prod"] = Field(default="dev", description="运行环境")
     
     # 子配置
-    database: DatabaseConfig = Field(default_factory=DatabaseConfig)
+    database: DatabaseConfig = Field(default_factory=DatabaseConfig)  # type: ignore[arg-type]
     redis: RedisConfig = Field(default_factory=RedisConfig)
     chroma: ChromaConfig = Field(default_factory=ChromaConfig)
-    ctp: CTPConfig = Field(default_factory=CTPConfig)
-    claude: ClaudeConfig = Field(default_factory=ClaudeConfig)
+    ctp: CTPConfig = Field(default_factory=CTPConfig)  # type: ignore[arg-type]
+    claude: ClaudeConfig = Field(default_factory=ClaudeConfig)  # type: ignore[arg-type]
     strategy: StrategyConfig = Field(default_factory=StrategyConfig)
     ml: MLConfig = Field(default_factory=MLConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
@@ -262,14 +262,14 @@ class Config(BaseSettings):
             )
     
     @classmethod
-    def load(cls, env_file: Optional[str] = None) -> 'Config':
+    def load(cls, env_file: Optional[str] = None) -> 'AppConfig':
         """加载配置"""
         # 默认使用 .env 文件
         if env_file is None:
             env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env')
         
         if os.path.exists(env_file):
-            config_instance = cls(_env_file=env_file)
+            config_instance = cls(_env_file=env_file)  # type: ignore[call-arg]
         else:
             config_instance = cls()
         
@@ -280,4 +280,4 @@ class Config(BaseSettings):
 
 
 # 全局配置实例
-config = Config.load()
+config: AppConfig = AppConfig.load()

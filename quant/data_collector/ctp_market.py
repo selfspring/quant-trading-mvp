@@ -6,7 +6,7 @@ import os
 import time
 import logging
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Any, Deque, Dict
 from collections import defaultdict, deque
 
 import pandas as pd
@@ -22,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # 全局状态
-_tick_cache = defaultdict(lambda: deque(maxlen=12000))
+_tick_cache: Dict[str, Deque[Dict[str, Any]]] = defaultdict(lambda: deque(maxlen=12000))
 _bars = {}
 _connected = False
 _tick_count = 0

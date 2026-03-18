@@ -4,7 +4,7 @@
 """
 from psycopg2 import pool
 from contextlib import contextmanager
-from typing import Optional
+from typing import Any, Generator, Optional
 import logging
 
 from .config import config
@@ -18,18 +18,18 @@ class DatabasePool:
     _instance: Optional['DatabasePool'] = None
     _pool: Optional[pool.ThreadedConnectionPool] = None
     
-    def __new__(cls):
+    def __new__(cls) -> 'DatabasePool':
         """单例模式"""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
     
-    def __init__(self):
+    def __init__(self) -> None:
         """初始化连接池"""
         if self._pool is None:
             self._initialize_pool()
     
-    def _initialize_pool(self):
+    def _initialize_pool(self) -> None:
         """创建连接池"""
         try:
             self._pool = pool.ThreadedConnectionPool(
@@ -51,7 +51,7 @@ class DatabasePool:
             raise
     
     @contextmanager
-    def get_connection(self):
+    def get_connection(self) -> Generator[Any, None, None]:
         """
         从连接池获取连接（上下文管理器）
         
@@ -60,6 +60,8 @@ class DatabasePool:
                 cursor = conn.cursor()
                 cursor.execute("SELECT 1")
         """
+        if self._pool is None:
+            raise RuntimeError("Database pool not initialized")
         conn = None
         try:
             conn = self._pool.getconn()
@@ -70,10 +72,10 @@ class DatabasePool:
             logger.error(f"database_connection_error: {e}")
             raise
         finally:
-            if conn:
+            if conn and self._pool is not None:
                 self._pool.putconn(conn)
     
-    def close_all(self):
+    def close_all(self) -> None:
         """关闭所有连接"""
         if self._pool:
             self._pool.closeall()
@@ -85,7 +87,7 @@ db_pool = DatabasePool()
 
 
 @contextmanager
-def get_db_connection():
+def get_db_connection() -> Generator[Any, None, None]:
     """
     便捷函数：获取数据库连接
     

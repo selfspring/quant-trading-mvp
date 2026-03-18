@@ -3,12 +3,13 @@ CTP 交易接口工厂函数
 统一管理 CTPTradeApi 的创建，避免重复硬编码连接参数
 """
 from contextlib import contextmanager
+from typing import Any, Generator
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def create_ctp_trade_api(config):
+def create_ctp_trade_api(config: Any) -> Any:
     """
     根据 config 创建 CTPTradeApi 实例（未连接）
     
@@ -30,7 +31,7 @@ def create_ctp_trade_api(config):
 
 
 @contextmanager
-def ctp_trade_session(config):
+def ctp_trade_session(config: Any) -> Generator[Any, None, None]:
     """
     CTP 交易接口上下文管理器，自动连接和断开
     

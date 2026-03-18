@@ -3,12 +3,13 @@
 统一管理数据库连接的创建，避免硬编码密码和重复代码
 """
 from contextlib import contextmanager
+from typing import Any, Generator
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def get_db_url(config) -> str:
+def get_db_url(config: Any) -> str:
     """
     根据 config.database 构建 SQLAlchemy 连接 URL
     
@@ -24,7 +25,7 @@ def get_db_url(config) -> str:
     return f"postgresql+psycopg2://{db.user}:{quote_plus(password)}@{db.host}:{db.port}/{db.database}"
 
 
-def get_db_dsn(config) -> str:
+def get_db_dsn(config: Any) -> str:
     """
     根据 config.database 构建 psycopg2 DSN 字符串（用于非 pandas 场景）
     """
@@ -34,7 +35,7 @@ def get_db_dsn(config) -> str:
 
 
 @contextmanager
-def db_engine(config):
+def db_engine(config: Any) -> Generator[Any, None, None]:
     """
     SQLAlchemy engine 上下文管理器（用于 pd.read_sql）
     
@@ -54,7 +55,7 @@ def db_engine(config):
 
 
 @contextmanager
-def db_connection(config):
+def db_connection(config: Any) -> Generator[Any, None, None]:
     """
     psycopg2 原生连接上下文管理器（用于非 pandas 场景）
     

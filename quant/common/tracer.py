@@ -6,7 +6,7 @@ import uuid
 import json
 import time
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Set
 from queue import Queue, Full, Empty
 from threading import Thread
 import redis
@@ -62,7 +62,7 @@ class MessageTracer:
         self.logger = logger.bind(process=process_name)
         
         # 异步写入队列
-        self.write_queue = Queue(maxsize=10000)
+        self.write_queue: Queue[Dict[str, Any]] = Queue(maxsize=10000)
         self.batch_size = batch_size
         self.flush_interval = flush_interval
         
@@ -98,7 +98,7 @@ class MessageTracer:
         status: str = 'success',
         error_msg: Optional[str] = None,
         latency_ms: Optional[int] = None
-    ):
+    ) -> None:
         """
         记录事件到 message_trace 表和 Redis（非阻塞）
         
@@ -186,8 +186,7 @@ class MessageTracer:
                 error=str(e)
             )
     
-    def _batch_writer(self):
-        """批量写入数据库（后台线程）"""
+    def _batch_writer(self) -> None:
         batch = []
         last_flush = time.time()
         
@@ -219,14 +218,14 @@ class MessageTracer:
         if batch:
             self._batch_insert(batch)
     
-    def _batch_insert(self, records: List[Dict]):
+    def _batch_insert(self, records: List[Dict[str, Any]]) -> None:
         """批量插入数据库（带重试）"""
         if not records:
             return
         
         self._batch_insert_with_retry(records)
     
-    def _batch_insert_with_retry(self, records: List[Dict], max_retries: int = 3):
+    def _batch_insert_with_retry(self, records: List[Dict[str, Any]], max_retries: int = 3) -> None:
         """批量插入数据库（带重试和备份）"""
         for attempt in range(max_retries):
             try:
@@ -279,7 +278,7 @@ class MessageTracer:
                         error=str(e)
                     )
     
-    def _write_to_backup(self, records: List[Dict]):
+    def _write_to_backup(self, records: List[Dict[str, Any]]) -> None:
         """写入本地备份文件"""
         try:
             import os
@@ -363,8 +362,8 @@ class MessageTracer:
     def subscribe_with_trace(
         self,
         channel: str,
-        callback
-    ):
+        callback: Any
+    ) -> Thread:
         """
         订阅消息时自动记录 trace（在独立线程中运行）
         
@@ -375,7 +374,7 @@ class MessageTracer:
         Returns:
             Thread: 订阅线程对象
         """
-        def _subscribe_thread():
+        def _subscribe_thread() -> None:
             pubsub = self.redis.pubsub()
             pubsub.subscribe(channel)
             
@@ -400,7 +399,7 @@ class MessageTracer:
         thread.start()
         return thread
     
-    def _handle_message(self, message, channel: str, callback):
+    def _handle_message(self, message: Any, channel: str, callback: Any) -> None:
         """处理单条消息"""
         start_time = time.time()
         trace_id = None
@@ -451,14 +450,12 @@ class MessageTracer:
             )
     
     def get_stats(self) -> Dict[str, int]:
-        """获取统计信息"""
         return {
             **self.stats,
             'queue_size': self.write_queue.qsize()
         }
     
-    def shutdown(self):
-        """优雅关闭"""
+    def shutdown(self) -> None:
         self.logger.info("shutting_down_tracer", process=self.process_name)
         self._running = False
         self.writer_thread.join(timeout=5)
@@ -481,14 +478,14 @@ class TraceContext:
         self.event_type = event_type
         self.parent_trace_id = parent_trace_id
         self.trace_id = generate_trace_id()
-        self.start_time = None
+        self.start_time: Optional[float] = None
     
-    def __enter__(self):
+    def __enter__(self) -> str:
         self.start_time = time.time()
         return self.trace_id
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        latency_ms = int((time.time() - self.start_time) * 1000)
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        latency_ms = int((time.time() - (self.start_time or 0.0)) * 1000)
         
         if exc_type is None:
             # 成功
@@ -512,4 +509,4 @@ class TraceContext:
                 latency_ms=latency_ms
             )
         
-        return False  # 不抑制异常
+        return  # 不抑制异常

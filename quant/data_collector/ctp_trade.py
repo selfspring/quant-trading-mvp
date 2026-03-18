@@ -4,7 +4,7 @@ CTP 交易接口封装
 """
 import time
 import threading
-from typing import Dict, Optional, Callable
+from typing import Any, Dict, Optional, Callable
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,16 +27,18 @@ try:
     THOST_FTDC_HF_Speculation = tdapi.THOST_FTDC_HF_Speculation
     THOST_FTDC_PD_Long = tdapi.THOST_FTDC_PD_Long
     THOST_FTDC_PD_Short = tdapi.THOST_FTDC_PD_Short
+    _CTP_SPI_BASE: Any = tdapi.CThostFtdcTraderSpi
     HAS_CTP = True
 except ImportError:
     logger.warning("openctp-ctp 未安装，CTPTradeApi 将不可用")
+    _CTP_SPI_BASE = object
     HAS_CTP = False
 
 
-class TradeSpi(tdapi.CThostFtdcTraderSpi if HAS_CTP else object):
+class TradeSpi(_CTP_SPI_BASE):
     """CTP 交易回调"""
 
-    def __init__(self, api, trade_api: 'CTPTradeApi'):
+    def __init__(self, api: Any, trade_api: 'CTPTradeApi') -> None:
         if HAS_CTP:
             super().__init__()
         self.api = api
@@ -169,8 +171,8 @@ class CTPTradeApi:
         self.auth_code = auth_code
 
         # 内部状态
-        self._api = None
-        self._spi = None
+        self._api: Any = None
+        self._spi: Any = None
         self._connected = False
         self._order_ref_seq = 0
         self._order_ref_lock = threading.Lock()
@@ -185,7 +187,7 @@ class CTPTradeApi:
         self._order_callbacks: Dict[str, Callable] = {}
 
         # 持仓查询缓冲
-        self._position_buffer = []
+        self._position_buffer: list[Any] = []
 
     # =========================================================
     # 连接管理
