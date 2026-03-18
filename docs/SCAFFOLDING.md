@@ -34,10 +34,14 @@
 ```
 
 #### 数据库操作 Linter
-**文件**: `scripts/lint_db_operations.py`
+**文件**: `scripts/lint_db_operations.py` ✅ 已实现
 
 检查项：
 - [x] 所有数据库操作必须使用 db_engine/db_connection（不直接 psycopg2.connect）— **已实现**: `quant/common/db.py`
+- [x] 禁止硬编码数据库密码 — **DB-002 规则**
+- [x] 禁止硬编码连接参数 — **DB-003 规则**
+- [x] 禁止直接 import psycopg2 — **DB-004 规则**
+- [x] 禁止直接 create_engine — **DB-005 规则**
 - [ ] SQL 查询必须使用参数化（防 SQL 注入）
 - [ ] 必须有异常处理和日志记录
 
