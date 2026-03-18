@@ -1,0 +1,10 @@
+import psycopg2
+conn = psycopg2.connect(host='localhost', port=5432, database='quant_trading', user='postgres', password='@Cmx1454697261')
+cur = conn.cursor()
+cur.execute("SELECT symbol, COUNT(*) FROM kline_data WHERE symbol IN ('au2606','AU2606') GROUP BY symbol")
+rows = cur.fetchall()
+print('au2606 K-lines:', rows if rows else '0 rows')
+cur.execute("SELECT MAX(time) FROM kline_data")
+print('Latest kline time:', cur.fetchone()[0])
+cur.close()
+conn.close()

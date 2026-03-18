@@ -1,0 +1,66 @@
+# 量化交易系统依赖清单
+# 版本已锁定，避免生产环境依赖冲突
+# Python 版本要求: >=3.10
+
+# 数据库
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.25
+timescale==0.0.12
+
+# 向量数据库
+chromadb==0.4.22
+
+# 消息队列和缓存
+redis==5.0.1
+hiredis==2.3.2
+
+# 交易接口
+openctp-ctp>=6.7.0
+
+# 机器学习
+lightgbm==4.3.0
+scikit-learn==1.4.0
+pandas==2.2.0
+numpy==1.26.3
+
+# 技术指标
+TA-Lib==0.4.28
+
+# 回测框架
+vectorbt==0.26.1
+
+# AI模型
+anthropic==0.18.1
+
+# Web框架
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+websockets==12.0
+pydantic==2.6.1
+pydantic-settings==2.1.0
+
+# 数据采集
+requests==2.31.0
+beautifulsoup4==4.12.3
+lxml==5.1.0
+akshare==1.13.0
+tushare==1.4.3
+
+# 工具库
+python-dotenv==1.0.1
+pyyaml==6.0.1
+structlog==24.1.0
+python-dateutil==2.8.2
+
+# 进程管理
+supervisor==4.2.5
+
+# 测试
+pytest==8.0.0
+pytest-asyncio==0.23.4
+pytest-cov==4.1.0
+
+# 开发工具
+black==24.1.1
+flake8==7.0.0
+mypy==1.8.0

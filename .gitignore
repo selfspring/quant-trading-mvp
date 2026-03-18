@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 环境变量（含密码）
+.env
+.env.*
+
+# 模型文件（太大）
+models/*.txt
+models/*.bin
+
+# 数据文件
+data/*.json
+data/*.csv
+data/*.db
+data/*.pid
+
+# 日志
+logs/
+*.log
+
+# CTP 临时文件
+*.con
+*.dat
+DialogRsp.con
+QueryRsp.con
+TradingDay.con
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 备份
+*.bak
+*.tmp
