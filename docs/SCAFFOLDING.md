@@ -139,8 +139,24 @@ monitor/         → 可依赖所有层
 python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
+disallow_untyped_defs = false  # 全局宽松
+check_untyped_defs = true
+ignore_missing_imports = true
+
+# 核心模块严格检查
+[[tool.mypy.overrides]]
+module = "quant.common.*"
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "quant.risk_executor.*"
 disallow_untyped_defs = true
 ```
+
+**当前状态**: ⚠️ 部分实现
+- [x] pyproject.toml 配置完成
+- [ ] quant/common/ 有 64 个类型错误待修复
+- [ ] quant/risk_executor/ 未检查
 
 检查项：
 - [ ] 所有函数必须有类型注解
