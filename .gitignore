@@ -111,3 +111,15 @@ catboost_info/
 .openclaw/skills/**/node_modules/
 .openclaw/skills/**/__pycache__/
 .openclaw/skills/**/.clawhub/
+
+# Generated artifacts (cleaned)
+/data/factor_discovery_log.jsonl
+/data/news_vectors/
+/models/xgb_model.json
+/models/catboost_model.cbm
+/*_summary.md
+/*_REPORT.md
+/ISSUE_LIST.md
+/ISSUE_ANALYSIS_REPORT.md
+/MOVE_VERIFICATION.md
+/CLEANUP_SUMMARY.md
