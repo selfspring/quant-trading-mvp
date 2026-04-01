@@ -1,0 +1,128 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "description": "评估标准预设库 — Evaluator Agent 按维度打分"
+  },
+  "presets": {
+    "fullstack": {
+      "description": "全栈应用开发评估",
+      "dimensions": {
+        "functionality": {
+          "weight": 30,
+          "threshold": 6,
+          "description": "功能完整性：所有需求点是否实现？能否正常使用？边界条件是否处理？",
+          "failSignals": ["功能缺失", "运行报错", "边界崩溃"]
+        },
+        "codeQuality": {
+          "weight": 25,
+          "threshold": 6,
+          "description": "代码质量：可读性、命名规范、模块化、DRY原则、错误处理",
+          "failSignals": ["硬编码", "复制粘贴代码", "无错误处理", "命名混乱"]
+        },
+        "design": {
+          "weight": 20,
+          "threshold": 5,
+          "description": "设计质量：UI/UX 是否协调统一？布局、配色、字体层次是否有设计感？",
+          "failSignals": ["模板感", "紫色渐变+白卡片（AI slop）", "间距不一致"]
+        },
+        "originality": {
+          "weight": 10,
+          "threshold": 4,
+          "description": "创意性：是否有自主设计决策？还是全部默认组件堆砌？",
+          "failSignals": ["全部默认样式", "无自定义", "典型AI生成风格"]
+        },
+        "robustness": {
+          "weight": 15,
+          "threshold": 6,
+          "description": "健壮性：错误处理、输入验证、并发安全、数据一致性",
+          "failSignals": ["未捕获异常", "无输入验证", "SQL注入风险"]
+        }
+      },
+      "scoringGuide": "1-3: 严重不合格 | 4-5: 不及格 | 6-7: 合格 | 8-9: 优秀 | 10: 杰出"
+    },
+    "backend-api": {
+      "description": "后端 API 开发评估",
+      "dimensions": {
+        "functionality": {
+          "weight": 35,
+          "threshold": 7,
+          "description": "API 端点完整性、请求响应正确性、状态码规范",
+          "failSignals": ["端点缺失", "返回格式不一致", "状态码错误"]
+        },
+        "codeQuality": {
+          "weight": 25,
+          "threshold": 6,
+          "description": "代码结构、分层清晰度、依赖管理",
+          "failSignals": ["逻辑全堆在一个函数", "循环依赖", "魔法数字"]
+        },
+        "performance": {
+          "weight": 15,
+          "threshold": 5,
+          "description": "查询效率、N+1 问题、缓存策略、资源释放",
+          "failSignals": ["N+1 查询", "未关闭连接", "全表扫描"]
+        },
+        "security": {
+          "weight": 15,
+          "threshold": 7,
+          "description": "认证授权、输入验证、SQL 注入防护、敏感数据处理",
+          "failSignals": ["无认证", "明文密码", "SQL拼接"]
+        },
+        "documentation": {
+          "weight": 10,
+          "threshold": 5,
+          "description": "API 文档、注释、使用示例",
+          "failSignals": ["无文档", "过时注释", "缺少示例"]
+        }
+      },
+      "scoringGuide": "1-3: 严重不合格 | 4-5: 不及格 | 6-7: 合格 | 8-9: 优秀 | 10: 杰出"
+    },
+    "data-pipeline": {
+      "description": "数据管道/ETL 评估",
+      "dimensions": {
+        "correctness": {
+          "weight": 35,
+          "threshold": 7,
+          "description": "数据转换正确性、完整性、一致性",
+          "failSignals": ["数据丢失", "类型转换错误", "重复数据"]
+        },
+        "reliability": {
+          "weight": 25,
+          "threshold": 6,
+          "description": "错误恢复、幂等性、断点续跑",
+          "failSignals": ["失败无重试", "非幂等", "无checkpoint"]
+        },
+        "performance": {
+          "weight": 20,
+          "threshold": 5,
+          "description": "吞吐量、内存使用、批处理效率",
+          "failSignals": ["全量加载到内存", "单条处理", "无批量"]
+        },
+        "observability": {
+          "weight": 10,
+          "threshold": 5,
+          "description": "日志、指标、告警、进度可视化",
+          "failSignals": ["无日志", "print调试", "无进度指示"]
+        },
+        "maintainability": {
+          "weight": 10,
+          "threshold": 5,
+          "description": "配置外部化、代码模块化、测试覆盖",
+          "failSignals": ["硬编码路径", "单文件千行", "无测试"]
+        }
+      },
+      "scoringGuide": "1-3: 严重不合格 | 4-5: 不及格 | 6-7: 合格 | 8-9: 优秀 | 10: 杰出"
+    }
+  },
+  "customTemplate": {
+    "description": "自定义评估标准模板",
+    "dimensions": {
+      "dimension_name": {
+        "weight": 0,
+        "threshold": 0,
+        "description": "维度描述",
+        "failSignals": []
+      }
+    },
+    "scoringGuide": "1-3: 严重不合格 | 4-5: 不及格 | 6-7: 合格 | 8-9: 优秀 | 10: 杰出"
+  }
+}

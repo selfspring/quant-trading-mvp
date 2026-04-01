@@ -1,0 +1,113 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 环境变量（含密码）
+.env
+.env.*
+
+# 模型文件（太大）
+models/*.txt
+models/*.bin
+models/*.pkl
+models/*.joblib
+
+# 数据文件
+data/*.json
+data/*.csv
+data/*.db
+data/*.pid
+data/*.sqlite
+data/*.sqlite3
+data/raw_gold/
+
+# 日志
+logs/
+*.log
+
+# CTP 临时/连接文件
+*.con
+*.dat
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 备份
+*.bak
+*.tmp
+
+# 缓存
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+catboost_info/
+
+# ===== 根目录临时文件 =====
+/tmp_*
+/temp_*
+/_*.py
+/check_*.py
+/fix_*.py
+/test_ctp_*.py
+/test_simnow_*.py
+/test_factor*.py
+/test_ml_*.py
+/show_*.py
+/list_*.py
+/reset_*.py
+/generate_test_data.py
+/deep_analyze_*.py
+/analyze_*.py
+/repro_*.out
+/debug_*.out
+/verify_*.log
+/strategy_output.log
+/temp/
+/temp_ctp_md/
+
+# 根目录生成的报告 markdown（不是源码文档）
+/*_summary.md
+/*_REPORT.md
+/MOVE_VERIFICATION.md
+/CLEANUP_SUMMARY.md
+/ISSUE_LIST.md
+/ISSUE_ANALYSIS_REPORT.md
+
+# ===== OpenClaw workspace =====
+# 临时文件
+.openclaw/tmp_*
+.openclaw/_*.py
+.openclaw/temp_*
+.openclaw/temp_skills/
+
+# 双轨记忆数据（ChromaDB + SQLite + Markdown logs）
+.openclaw/data/
+
+# OpenClaw 内部
+.openclaw/.openclaw/
+.openclaw/.clawhub/
+.openclaw/.git/
+
+# Skills 缓存
+.openclaw/skills/**/node_modules/
+.openclaw/skills/**/__pycache__/
+.openclaw/skills/**/.clawhub/

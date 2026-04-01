@@ -1,0 +1,64 @@
+{
+  "teamName": "trading",
+  "roles": [
+    {
+      "id": "quant-strategist",
+      "name": "Quant Strategist 📈",
+      "emoji": "📈",
+      "description": "量化策略师 — 策略设计、信号融合、回测优化",
+      "responsibilities": [
+        "设计和优化量化交易策略",
+        "多信号融合算法（技术指标 + ML + LLM）",
+        "Backtrader 回测和参数优化",
+        "策略性能评估（夏普比率、最大回撤等）",
+        "策略文档编写"
+      ],
+      "modelType": "strongest"
+    },
+    {
+      "id": "risk-manager",
+      "name": "Risk Manager 🛡️",
+      "emoji": "🛡️",
+      "description": "风控经理 — 风控规则、仓位管理、止损止盈",
+      "responsibilities": [
+        "设计和实施风控规则",
+        "动态仓位管理算法",
+        "止损止盈策略设计",
+        "最大回撤控制",
+        "连败熔断机制",
+        "风控报告生成"
+      ],
+      "modelType": "strongest"
+    },
+    {
+      "id": "trade-executor",
+      "name": "Trade Executor 💼",
+      "emoji": "💼",
+      "description": "交易执行员 — CTP 接口、订单管理、成交监控",
+      "responsibilities": [
+        "CTP 交易接口封装和调试",
+        "订单管理系统开发",
+        "成交回报处理",
+        "订单状态跟踪",
+        "交易异常处理和重试",
+        "交易日志记录"
+      ],
+      "modelType": "code"
+    },
+    {
+      "id": "market-analyst",
+      "name": "Market Analyst 🔍",
+      "emoji": "🔍",
+      "description": "市场分析师 — 新闻解读、基本面分析、市场情绪",
+      "responsibilities": [
+        "新闻数据采集脚本开发",
+        "LLM 新闻解读（Claude API 调用）",
+        "基本面数据分析",
+        "市场情绪指标计算",
+        "重大事件识别和告警",
+        "分析报告生成"
+      ],
+      "modelType": "balanced"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "team": "开发",
+  "created": "2026-03-16T02:11:52.610Z",
+  "agents": [
+    {
+      "id": "开发-pm",
+      "roleId": "pm",
+      "name": "PM",
+      "emoji": "📋",
+      "model": {
+        "primary": "custom-llmapi-lovbrowser-com/anthropic/claude-sonnet-4.6",
+        "fallbacks": [
+          "custom-llmapi-lovbrowser-com/anthropic/claude-haiku-4.5",
+          "1/claude-opus-4-6",
+          "openai-codex/gpt-5.3-codex"
+        ]
+      }
+    },
+    {
+      "id": "开发-architect",
+      "roleId": "architect",
+      "name": "Architect",
+      "emoji": "🏗️",
+      "model": {
+        "primary": "1/claude-opus-4-6",
+        "fallbacks": [
+          "openai-codex/gpt-5.3-codex",
+          "custom-llmapi-lovbrowser-com/anthropic/claude-sonnet-4.6",
+          "custom-llmapi-lovbrowser-com/anthropic/claude-haiku-4.5"
+        ]
+      }
+    },
+    {
+      "id": "开发-frontend",
+      "roleId": "frontend",
+      "name": "Frontend",
+      "emoji": "🎨",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": [
+          "custom-llmapi-lovbrowser-com/anthropic/claude-sonnet-4.6",
+          "1/claude-opus-4-6",
+          "custom-llmapi-lovbrowser-com/anthropic/claude-haiku-4.5"
+        ]
+      }
+    },
+    {
+      "id": "开发-backend",
+      "roleId": "backend",
+      "name": "Backend",
+      "emoji": "⚙️",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": [
+          "custom-llmapi-lovbrowser-com/anthropic/claude-sonnet-4.6",
+          "1/claude-opus-4-6",
+          "custom-llmapi-lovbrowser-com/anthropic/claude-haiku-4.5"
+        ]
+      }
+    },
+    {
+      "id": "开发-qa",
+      "roleId": "qa",
+      "name": "QA",
+      "emoji": "🔍",
+      "model": {
+        "primary": "custom-llmapi-lovbrowser-com/anthropic/claude-sonnet-4.6",
+        "fallbacks": [
+          "custom-llmapi-lovbrowser-com/anthropic/claude-haiku-4.5",
+          "1/claude-opus-4-6",
+          "openai-codex/gpt-5.3-codex"
+        ]
+      }
+    },
+    {
+      "id": "开发-devops",
+      "roleId": "devops",
+      "name": "DevOps",
+      "emoji": "🚀",
+      "model": {
+        "primary": "1/claude-opus-4-6",
+        "fallbacks": [
+          "openai-codex/gpt-5.3-codex",
+          "custom-llmapi-lovbrowser-com/anthropic/claude-sonnet-4.6",
+          "custom-llmapi-lovbrowser-com/anthropic/claude-haiku-4.5"
+        ]
+      }
+    },
+    {
+      "id": "开发-code-artisan",
+      "roleId": "code-artisan",
+      "name": "Code Artisan",
+      "emoji": "🛠️",
+      "model": {
+        "primary": "openai-codex/gpt-5.3-codex",
+        "fallbacks": [
+          "custom-llmapi-lovbrowser-com/anthropic/claude-sonnet-4.6",
+          "1/claude-opus-4-6",
+          "custom-llmapi-lovbrowser-com/anthropic/claude-haiku-4.5"
+        ]
+      }
+    }
+  ],
+  "workflow": {
+    "name": "标准9步协作流程",
+    "description": "PM→Architect→并行开发→Review→QA→部署",
+    "requiredRoles": [
+      "pm",
+      "architect"
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "role": "pm",
+        "action": "产出 PRD 和用户故事",
+        "output": "requirements.md, user-stories.md"
+      },
+      {
+        "step": 2,
+        "role": "architect",
+        "action": "架构评审与技术方案",
+        "output": "architecture.md, api-spec.md",
+        "feedback_loop": "pm"
+      },
+      {
+        "step": 3,
+        "roles": [
+          "frontend",
+          "backend"
+        ],
+        "action": "并行开发",
+        "parallel": true,
+        "output": "代码实现"
+      },
+      {
+        "step": 4,
+        "role": "code-artisan",
+        "action": "代码审查与优化",
+        "output": "review-report.md"
+      },
+      {
+        "step": 5,
+        "role": "qa",
+        "action": "测试",
+        "output": "test-report.md"
+      },
+      {
+        "step": 6,
+        "roles": [
+          "pm",
+          "qa"
+        ],
+        "action": "共同确认可交付",
+        "output": "sign-off.md"
+      },
+      {
+        "step": 7,
+        "role": "devops",
+        "action": "测试环境部署",
+        "output": "deployment-log.md"
+      },
+      {
+        "step": 8,
+        "role": "_user",
+        "action": "用户确认测试环境",
+        "output": "user-feedback.md"
+      },
+      {
+        "step": 9,
+        "role": "devops",
+        "action": "生产环境部署",
+        "output": "production-log.md"
+      }
+    ]
+  },
+  "workspace": "E:"
+}

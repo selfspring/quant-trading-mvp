@@ -1,0 +1,114 @@
+# 量化交易系统配置文件示例
+# 复制为 config.yaml 并填入实际配置
+
+# CTP接口配置
+ctp:
+  # 7x24环境（推荐用于开发测试）
+  env_7x24:
+    broker_id: "9999"
+    account_id: "17476"
+    password: "123456"
+    md_address: "tcp://180.168.146.187:10211"  # 行情服务器
+    td_address: "tcp://180.168.146.187:10201"  # 交易服务器
+    app_id: "simnow_client_test"
+    auth_code: "0000000000000000"
+  
+  # 仿真环境
+  env_sim:
+    broker_id: "9999"
+    account_id: "16889"
+    password: "123456"
+    md_address: "tcp://180.168.146.187:10131"
+    td_address: "tcp://180.168.146.187:10130"
+    app_id: "simnow_client_test"
+    auth_code: "0000000000000000"
+  
+  # 当前使用的环境
+  active_env: "env_7x24"  # 或 "env_sim"
+
+# 数据库配置
+database:
+  timescaledb:
+    host: "localhost"
+    port: 5432
+    database: "quant_trading"
+    user: "postgres"
+    password: "your_password_here"
+  
+  chroma:
+    host: "localhost"
+    port: 8000
+    collection_name: "news_embeddings"
+
+# AI模型配置
+ai:
+  claude:
+    api_key: "your_claude_api_key_here"
+    model: "claude-opus-4"
+    base_url: "https://api.anthropic.com"
+
+# 交易策略配置
+strategy:
+  symbol: "au2406"  # 黄金期货合约
+  interval: "30m"   # K线周期
+  
+  # 信号融合权重
+  signal_weights:
+    technical: 0.3
+    ml: 0.5
+    news: 0.2
+  
+  # 风控参数
+  risk:
+    max_position_ratio: 0.7  # 最大仓位比例
+    max_weekly_drawdown: 0.25  # 最大周回撤
+    consecutive_loss_limit: 3  # 连败熔断次数
+    atr_multiplier: 2.0  # ATR波动率过滤倍数
+  
+  # 仓位管理
+  position_sizing:
+    signal_strength_0_65: 0.3
+    signal_strength_0_75: 0.5
+    signal_strength_0_85: 0.7
+
+# 数据源配置
+data_sources:
+  # 基本面数据
+  fundamental:
+    provider: "akshare"  # 或 "tushare"
+    tushare_token: ""  # 如果使用TuShare，填入token
+  
+  # 新闻数据
+  news:
+    sources:
+      - "eastmoney"  # 东方财富
+      - "sina"       # 新浪财经
+    fetch_interval: 300  # 抓取间隔（秒）
+
+# 监控与告警
+monitoring:
+  web:
+    host: "0.0.0.0"
+    port: 8080
+  
+  email:
+    enabled: true
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    sender: "your_email@gmail.com"
+    password: "your_email_password"
+    recipients:
+      - "your_email@gmail.com"
+  
+  alert_conditions:
+    - "order_filled"
+    - "consecutive_loss_3"
+    - "weekly_drawdown_20"
+    - "system_error"
+
+# 日志配置
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "logs/quant_trading.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
